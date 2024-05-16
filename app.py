@@ -19,7 +19,12 @@ app = Flask(__name__)
 postgres_password = os.getenv('PG_PASSWORD')
 
 # Configure SQLAlchemy database URI and track modifications
-app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://postgres:{postgres_password}@localhost/flashcards'
+# commented out URI for connecting to a local db on my pc
+#app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://postgres:{postgres_password}@localhost/flashcards'
+# Configure SQLAlchemy database URI and track modifications
+# Use the internal hostname or IP address provided by Render
+# GENERAL FORM >>> app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:' + postgres_password + '@<internal-hostname>:<port>/flashcards'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:' + postgres_password + '@<dpg-cp2uddkf7o1s73bnvcgg-a>:<5432>/flashcards'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Set a secret key for session security
