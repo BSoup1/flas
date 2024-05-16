@@ -25,7 +25,7 @@ postgres_password = os.getenv('PG_PASSWORD')
 # Use the internal hostname or IP address provided by Render
 # GENERAL FORM >>> app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:' + postgres_password + '@<internal-hostname>:<port>/flashcards'
 #app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://flashcards_rsx3_user:{postgres_password}@dpg-cp2uddkf7o1s73bnvcgg-a:5432/flashcards_rsx3'
-postgres://flashcards_rsx3_user:{postgres_password}@dpg-cp2uddkf7o1s73bnvcgg-a.frankfurt-postgres.render.com/flashcards_rsx3
+postgresql://flashcards_rsx3_user:{postgres_password}@dpg-cp2uddkf7o1s73bnvcgg-a.frankfurt-postgres.render.com/flashcards_rsx3
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 print("Postgres Password:", postgres_password)
