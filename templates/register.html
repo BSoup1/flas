@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+<div class="container mt-5"> 
+  {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                  {{ message }}
+              </div>
+          {% endfor %}
+      {% endif %}
+  {% endwith %}
+</div> <!-- end of block for displaying flash messages -->
+
+<div class="row justify-content-center">
+  <div class="col-md-4 mb-5"> <!-- Use col-md-4 to take approximately one-fifth of the desktop width -->
+    <h1>Sign up here</h1>
+    <form action="/register" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  <!--adding invisible crsf token  -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" id="email" name="email" required class="form-control" aria-describedby="emailHelp">
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" id="password" name="password" required class="form-control" >
+      </div>
+      <button type="submit" class="btn btn-primary register-btn">Register account</button>
+    </form>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <p><a href="{{ url_for('login') }}" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Login here if you have an account</a></p>
+  </div>
+</div>
+{% endblock %}
+

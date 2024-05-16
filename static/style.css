@@ -1,0 +1,15 @@
+/* additional styles for the cards section - updated */
+
+.card-content {
+  height: 50px; /* Adjust height as needed */
+}
+.translation {
+  display: none; /* Initially hide translation */
+}
+.add-card {
+  cursor: pointer;
+}
+
+.modal-backdrop {
+  display: none; /* Disable the overlay */
+}

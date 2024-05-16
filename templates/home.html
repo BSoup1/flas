@@ -1,0 +1,227 @@
+{% extends 'layout.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- Block for displaying flash messages -->
+<div class="container mt-5">
+  {% if message %}
+  <div class="alert alert-{{ category }} d-flex justify-content-between align-items-center" role="alert">
+      <span>{{ message }}</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+</div>  <!-- end of block -->
+
+<h1>Welcome to Flash Cards App</h1>
+<p>This is where you can review and add your cards.</p>
+
+<div class="container mt-5">
+    <div class="row row-cols-1 row-cols-md-3 g-4" id="cardRow">
+      <!-- Plus Card -->
+      <div class="col">
+        <div class="card h-100 add-card bg-light" onclick="addNewCard()">
+          <div class="card-body d-flex justify-content-center align-items-center">
+            <h1 class="text-primary">+</h1>
+          </div>
+        </div>
+      </div>
+      <!-- Regular Cards -->
+
+<!-- End of Regular Cards will be dynamically added here -->
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Card Content</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Form for editing card content and translation -->
+        <div class="mb-3">
+          <label for="cardContent" class="form-label">Card Content</label>
+          <textarea class="form-control" id="cardContent" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="translation" class="form-label">Translation</label>
+          <textarea class="form-control" id="translation" rows="3"></textarea>
+        </div>
+        <input type="hidden" id="cardId"> <!-- Add an input element for cardId -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveChanges()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Example button triggering openEditModal -->
+<!-- <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#editModal" onclick="openEditModal('{{ cardId }}')">Edit</button> -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fetch user-specific cards from the server upon page load
+    fetchCards();
+
+    // Event listener for the "Save Changes" button in the edit modal
+    document.getElementById('saveChangesBtn').addEventListener('click', function() {
+      saveChanges();
+    });
+
+    // Event listener for the "Add Card" button
+    document.getElementById('addCardBtn').addEventListener('click', function() {
+      addNewCard();
+    });
+  });
+
+  var editedCard; // Store reference to the edited card
+
+  function fetchCards() {
+    fetch('/get_user_cards')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(card => {
+          addCardToDOM(card.card_id, card.card_content, card.translation);
+        });
+      })
+      .catch(error => console.error('Error fetching cards:', error));
+  }
+
+  function addCardToDOM(cardId, cardContent, translation) {
+    var row = document.querySelector('.row-cols-md-3');
+    var newCardHtml = `
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <p class="card-text card-content mb-5">${cardContent}</p>
+            <button type="button" class="btn btn-light" onclick="toggleTranslation(this)">Toggle translation</button>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="translation list-group-item" style="display: none;">${translation}</li>
+          </ul>
+          <div class="card-body">
+            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#editModal" onclick="openEditModal(this, ${cardId})">Edit</button>
+            <button type="button" class="btn btn-warning" onclick="deleteCard(this, ${cardId})">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+    row.insertAdjacentHTML('beforeend', newCardHtml);
+  }
+
+  function toggleTranslation(button) {
+    var card = button.closest('.card'); // Get the closest card
+    var translation = card.querySelector('.translation'); // Find translation within the card
+
+    if (translation.style.display === 'none' || translation.style.display === '') {
+      translation.style.display = 'block'; // Show the translation if it's hidden
+    } else {
+      translation.style.display = 'none'; // Hide the translation if it's visible
+    }
+  }
+
+
+  //function opeEditModal with the debuggin messages
+  function openEditModal(button, cardId) {
+    console.log('Card ID:', cardId); // Log cardId value
+
+    editedCard = button.closest('.card'); // Store reference to the edited card
+    var cardContent = editedCard.querySelector('.card-content').innerText;
+    var translation = editedCard.querySelector('.translation').innerText;
+
+    // Set values in the modal
+    document.getElementById('cardContent').value = cardContent;
+    document.getElementById('translation').value = translation;
+    document.getElementById('cardId').value = cardId;
+
+    console.log('Modal Card ID:', document.getElementById('cardId').value); // Log cardId value in the modal
+
+    // Open the modal
+    var modal = new bootstrap.Modal(document.getElementById('editModal'));
+    modal.show();
+} // end of function opeEditModal with the debuggin messages
+
+
+  function saveChanges() {
+    var cardId = document.getElementById('cardId').value;
+    var newCardContent = document.getElementById('cardContent').value;
+    var newTranslation = document.getElementById('translation').value;
+
+    // Update card content and translation for the edited card
+    fetch(`/update_card/${cardId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        card_content: newCardContent
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.category === 'success') {
+        // Update the card content and translation in the DOM
+        var cardContent = editedCard.querySelector('.card-content');
+        var translation = editedCard.querySelector('.translation');
+        cardContent.innerText = newCardContent;
+        translation.innerText = newTranslation;
+      }
+      // Close the modal
+      var closeButton = document.querySelector('#editModal .btn-close');
+      closeButton.click();
+    })
+    .catch(error => console.error('Error updating card:', error));
+  }
+
+  function deleteCard(button, cardId) {
+    // Remove the card from the DOM
+    var card = button.closest('.col'); // Get the closest column
+    card.parentElement.removeChild(card); // Remove the card element
+
+    // Send request to delete the card from the server
+    fetch(`/delete_card/${cardId}`, {
+      method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error('Error deleting card:', error));
+  }
+
+  function addNewCard() {
+    console.log('Adding a new card...');
+    // Send request to add a new card to the server
+    fetch('/add_card', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        card_content: 'Enter card content',
+        translation: 'Enter translation'
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Response from server:', data);
+      if (data.category === 'success') {
+        // Add the new card to the DOM
+        addCardToDOM(data.card_id, 'Enter card content', 'Enter translation');
+      }
+    })
+    .catch(error => console.error('Error adding new card:', error));
+  }
+  
+</script>
+
+
+{% endblock %}
+

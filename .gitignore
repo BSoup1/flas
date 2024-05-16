@@ -1,0 +1,10 @@
+# Ignore .env file
+.env
+# Ignore tryos.py file
+tryos.py
+# Ignore venv
+.venv/
+# Ignore cache
+__pycache__/
+# Ignore migrations
+migrations/
